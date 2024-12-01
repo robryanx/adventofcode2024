@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -16,7 +15,7 @@ func main() {
 	}
 
 	var listA []int
-	var listB []int
+	listBCount := make(map[int]int, 0)
 	for str := range strs {
 		pair := strings.Split(str, "   ")
 
@@ -30,24 +29,20 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		listB = append(listB, intB)
-	}
 
-	slices.Sort(listA)
-	slices.Sort(listB)
+		if _, ok := listBCount[intB]; !ok {
+			listBCount[intB] = 1
+		} else {
+			listBCount[intB]++
+		}
+	}
 
 	total := 0
 	for i := 0; i < len(listA); i++ {
-		total += abs(listA[i] - listB[i])
+		if count, ok := listBCount[listA[i]]; ok {
+			total += listA[i] * count
+		}
 	}
 
 	fmt.Println(total)
-}
-
-func abs(num int) int {
-	if num < 0 {
-		num *= -1
-	}
-
-	return num
 }

@@ -9,12 +9,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var expectations = map[string]string{}
+var expectations = map[string]string{
+	"1-1": "1222801",
+	"1-2": "22545250",
+}
 
 func TestDays(t *testing.T) {
 	for day, expect := range expectations {
-		expect := expect
-		day := day
 		t.Run(day, func(t *testing.T) {
 			t.Parallel()
 			runCmd := exec.Command("go", "run", fmt.Sprintf("days/%s/main.go", day))
