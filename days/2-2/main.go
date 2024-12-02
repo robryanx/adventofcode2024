@@ -36,11 +36,6 @@ func main() {
 
 		if checkDirection(nums, true) {
 			safe++
-		} else {
-			nums = nums[1:]
-			if checkDirection(nums, false) {
-				safe++
-			}
 		}
 	}
 
@@ -49,49 +44,29 @@ func main() {
 
 func checkDirection(nums []int, canRemove bool) bool {
 	direction := Increasing
-	if nums[0] > nums[1] {
+	if nums[0] > nums[len(nums)-1] {
 		direction = Decreasing
 	}
 
 	for i := 0; i < len(nums)-1; i++ {
-		if direction == Increasing && nums[i] >= nums[i+1] {
+		if nums[i] == nums[i+1] {
 			if !canRemove {
 				return false
-			} else {
-				innerNumsFirst := slices.Clone(nums)
-				innerNumsFirst = slices.Delete(innerNumsFirst, i, i+1)
-				checkFirst := checkDirection(innerNumsFirst, false)
-
-				innerNumsSecond := slices.Clone(nums)
-				innerNumsSecond = slices.Delete(innerNumsSecond, i+1, i+2)
-				checkSecond := checkDirection(innerNumsSecond, false)
-
-				return checkFirst || checkSecond
 			}
-		} else if direction == Decreasing && nums[i] <= nums[i+1] {
+
+			return checkDirection(slices.Concat(nums[:i], nums[i+1:]), false)
+		}
+
+		if direction == Increasing && nums[i] > nums[i+1] ||
+			direction == Decreasing && nums[i] < nums[i+1] ||
+			abs(nums[i]-nums[i+1]) > 3 {
+
 			if !canRemove {
 				return false
-			} else {
-				innerNumsFirst := slices.Clone(nums)
-				innerNumsFirst = slices.Delete(innerNumsFirst, i, i+1)
-				checkFirst := checkDirection(innerNumsFirst, false)
-
-				innerNumsSecond := slices.Clone(nums)
-				innerNumsSecond = slices.Delete(innerNumsSecond, i+1, i+2)
-				checkSecond := checkDirection(innerNumsSecond, false)
-
-				return checkFirst || checkSecond
 			}
-		} else if abs(nums[i]-nums[i+1]) > 3 {
-			if !canRemove {
-				return false
-			} else {
-				innerNumsSecond := slices.Clone(nums)
-				innerNumsSecond = slices.Delete(innerNumsSecond, i+1, i+2)
-				checkSecond := checkDirection(innerNumsSecond, false)
 
-				return checkSecond
-			}
+			return checkDirection(slices.Concat(nums[:i], nums[i+1:]), false) ||
+				checkDirection(slices.Concat(nums[:i+1], nums[i+2:]), false)
 		}
 	}
 
