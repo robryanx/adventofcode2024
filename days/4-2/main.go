@@ -18,8 +18,8 @@ func main() {
 	}
 
 	total := 0
-	for y := 0; y < len(grid); y++ {
-		for x := 0; x < len(grid[0]); x++ {
+	for y := 1; y < len(grid)-1; y++ {
+		for x := 1; x < len(grid[0])-1; x++ {
 			if grid[y][x] == 'A' && isXmas(grid, y, x) {
 				total++
 			}
@@ -30,12 +30,6 @@ func main() {
 }
 
 func isXmas(grid [][]byte, y, x int) bool {
-	if y-1 < 0 || y+1 > len(grid)-1 {
-		return false
-	}
-	if x-1 < 0 || x+1 > len(grid[0])-1 {
-		return false
-	}
 	if !((grid[y-1][x-1] == 'M' && grid[y+1][x+1] == 'S') ||
 		(grid[y-1][x-1] == 'S' && grid[y+1][x+1] == 'M')) {
 		return false
