@@ -9,10 +9,10 @@ import (
 type Direction int
 
 const (
-	North Direction = 1
-	East  Direction = 2
-	South Direction = 3
-	West  Direction = 4
+	North Direction = 0
+	East  Direction = 1
+	South Direction = 2
+	West  Direction = 3
 )
 
 var charDirectionMapping = map[byte]Direction{
@@ -102,14 +102,16 @@ loop:
 		}
 	}
 
+	arrVisits := [67600]uint8{}
 	cycles := 0
 	for pos, order := range visits {
 		if order[0].pos == 0 {
 			continue
 		}
-		newVisits := make(map[[3]int]struct{}, order[0].pos)
+
+		arrVisits = [67600]uint8{}
 		for i := 0; i < order[0].pos-1; i++ {
-			newVisits[path[i]] = struct{}{}
+			arrVisits[(path[i][0]*len(grid[0])+path[i][1])+(path[i][2]*16900)] = 1
 		}
 
 		grid[pos[0]][pos[1]] = '#'
@@ -150,12 +152,12 @@ loop:
 			if grid[nextY][nextX] == '#' {
 				currentDirection = rotateMapping[currentDirection]
 			} else {
-				nextYx := [3]int{nextY, nextX, int(currentDirection)}
-				if _, ok := newVisits[nextYx]; ok {
+				// we can also just do a dumb path length > 6000 here and get 24ms over this 28ms solution...
+				if arrVisits[(nextY*len(grid[0])+nextX)+(int(currentDirection)*16900)] == 1 {
 					cycles++
 					break
 				}
-				newVisits[nextYx] = struct{}{}
+				arrVisits[(nextY*len(grid[0])+nextX)+(int(currentDirection)*16900)] = 1
 
 				currentY = nextY
 				currentX = nextX
