@@ -36,6 +36,17 @@ var nextMapping = map[Direction][2]int{
 	West:  {0, -1},
 }
 
+type pos struct {
+	y   int
+	x   int
+	dir Direction
+}
+
+type order struct {
+	pos int
+	dir Direction
+}
+
 func main() {
 	rows, err := util.ReadStrings("6", false, "\n")
 	if err != nil {
@@ -47,11 +58,8 @@ func main() {
 		grid = append(grid, []byte(row))
 	}
 
-	visits := make(map[[2]int][]Direction, 0)
-
-	startingDirection := North
-	startingY := -1
-	startingX := -1
+	path := []pos{}
+	visits := make(map[[2]int][]order, 0)
 
 	currentDirection := North
 	currentY := -1
@@ -65,10 +73,12 @@ loop:
 				currentDirection = charDirectionMapping[grid[y][x]]
 				currentX = x
 				currentY = y
-				startingDirection = charDirectionMapping[grid[y][x]]
-				startingX = x
-				startingY = y
 				grid[y][x] = '.'
+				path = append(path, pos{
+					y:   y,
+					x:   x,
+					dir: currentDirection,
+				})
 				break loop
 			}
 		}
@@ -76,6 +86,7 @@ loop:
 
 	baseGrid := util.CopyGrid(grid, true)
 
+	posCount := 0
 	for {
 		next := nextMapping[currentDirection]
 		nextY := currentY + next[0]
@@ -91,24 +102,38 @@ loop:
 		if grid[nextY][nextX] == '#' {
 			currentDirection = rotateMapping[currentDirection]
 		} else {
-			visits[[2]int{nextY, nextX}] = append(visits[[2]int{nextY, nextX}], currentDirection)
+			visits[[2]int{nextY, nextX}] = append(visits[[2]int{nextY, nextX}], order{
+				pos: posCount,
+				dir: currentDirection,
+			})
+			path = append(path, pos{
+				y:   nextY,
+				x:   nextX,
+				dir: currentDirection,
+			})
 			currentY = nextY
 			currentX = nextX
+			posCount++
 		}
 	}
 
 	cycles := 0
-	for pos := range visits {
-		newVisits := map[[2]int][]Direction{
-			{startingY, startingX}: {startingDirection},
+	for pos, order := range visits {
+		if order[0].pos == 0 {
+			continue
+		}
+		newVisits := make(map[[2]int][]Direction, order[0].pos)
+		for i := 0; i < order[0].pos-1; i++ {
+			posVisit := path[i]
+			newVisits[[2]int{posVisit.y, posVisit.x}] = []Direction{posVisit.dir}
 		}
 
 		testGrid := util.CopyGrid(baseGrid, true)
 		testGrid[pos[0]][pos[1]] = 'O'
-		currentDirection = startingDirection
-		currentY = startingY
-		currentX = startingX
-		start := false
+
+		currentDirection = path[order[0].pos-1].dir
+		currentY = path[order[0].pos-1].y
+		currentX = path[order[0].pos-1].x
 	loop2:
 		for {
 			next := nextMapping[currentDirection]
@@ -124,22 +149,15 @@ loop:
 
 			if testGrid[nextY][nextX] == '#' || testGrid[nextY][nextX] == 'O' {
 				currentDirection = rotateMapping[currentDirection]
-
-				if nextY == pos[0] && nextX == pos[1] {
-					start = true
-				}
 			} else {
-				if start {
-					if dirs, ok := newVisits[[2]int{nextY, nextX}]; ok {
-						for _, dir := range dirs {
-							if dir == currentDirection {
-								cycles++
-								break loop2
-							}
+				if dirs, ok := newVisits[[2]int{nextY, nextX}]; ok {
+					for _, dir := range dirs {
+						if dir == currentDirection {
+							cycles++
+							break loop2
 						}
 					}
 				}
-
 				currentY = nextY
 				currentX = nextX
 
