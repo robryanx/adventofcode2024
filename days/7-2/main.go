@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -54,10 +55,15 @@ func evalLine(nums []int, runningTotal, target int) bool {
 }
 
 func concat(numA, numB int) int {
-	num, err := strconv.Atoi(fmt.Sprintf("%d%d", numA, numB))
-	if err != nil {
-		panic(err)
+	return numA*int(math.Pow(10, digits(numB))) + numB
+}
+
+func digits(num int) float64 {
+	count := float64(0)
+	for num > 0 {
+		num = num / 10
+		count++
 	}
 
-	return num
+	return count
 }
