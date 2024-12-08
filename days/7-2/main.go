@@ -42,6 +42,10 @@ func main() {
 }
 
 func evalLine(nums []int, runningTotal, target int) bool {
+	if runningTotal > target {
+		return false
+	}
+
 	if len(nums) == 1 {
 		return runningTotal*nums[0] == target ||
 			runningTotal+nums[0] == target ||
