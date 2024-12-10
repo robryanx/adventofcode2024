@@ -29,7 +29,7 @@ func solution() int {
 	for y := 0; y < len(grid); y++ {
 		for x := 0; x < len(grid[0]); x++ {
 			if grid[y][x] == 0 {
-				reached := map[[2]int]struct{}{}
+				reached := map[int]struct{}{}
 				pathsReached(grid, y, x, reached)
 				total += len(reached)
 			}
@@ -39,33 +39,33 @@ func solution() int {
 	return total
 }
 
-func pathsReached(grid [][]int, y, x int, reached map[[2]int]struct{}) {
+func pathsReached(grid [][]int, y, x int, reached map[int]struct{}) {
 	nextVal := grid[y][x] + 1
 
 	if y-1 >= 0 && grid[y-1][x] == nextVal {
 		if nextVal == 9 {
-			reached[[2]int{y - 1, x}] = struct{}{}
+			reached[((y-1)*len(grid[0]))+x] = struct{}{}
 		} else {
 			pathsReached(grid, y-1, x, reached)
 		}
 	}
 	if x-1 >= 0 && grid[y][x-1] == nextVal {
 		if nextVal == 9 {
-			reached[[2]int{y, x - 1}] = struct{}{}
+			reached[(y*len(grid[0]))+x-1] = struct{}{}
 		} else {
 			pathsReached(grid, y, x-1, reached)
 		}
 	}
 	if y+1 < len(grid) && grid[y+1][x] == nextVal {
 		if nextVal == 9 {
-			reached[[2]int{y + 1, x}] = struct{}{}
+			reached[((y+1)*len(grid[0]))+x] = struct{}{}
 		} else {
 			pathsReached(grid, y+1, x, reached)
 		}
 	}
 	if x+1 < len(grid[0]) && grid[y][x+1] == nextVal {
 		if nextVal == 9 {
-			reached[[2]int{y, x + 1}] = struct{}{}
+			reached[(y*len(grid[0]))+x+1] = struct{}{}
 		} else {
 			pathsReached(grid, y, x+1, reached)
 		}
