@@ -7,6 +7,10 @@ import (
 )
 
 func main() {
+	fmt.Println(solution())
+}
+
+func solution() int {
 	rows, err := util.ReadStrings("10", false, "\n")
 	if err != nil {
 		panic(err)
@@ -30,7 +34,7 @@ func main() {
 		}
 	}
 
-	fmt.Println(total)
+	return total
 }
 
 func pathsCount(grid [][]int, y, x int) int {
