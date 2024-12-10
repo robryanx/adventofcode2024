@@ -7,6 +7,10 @@ import (
 )
 
 func main() {
+	fmt.Println(solution())
+}
+
+func solution() int {
 	values, err := util.ReadBytes("9", false)
 	if err != nil {
 		panic(err)
@@ -56,5 +60,5 @@ func main() {
 		total += (int(line[i]) - 1) * i
 	}
 
-	fmt.Println(total)
+	return total
 }

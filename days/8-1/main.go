@@ -12,6 +12,10 @@ type antenna struct {
 }
 
 func main() {
+	fmt.Println(solution())
+}
+
+func solution() int {
 	rows, err := util.ReadStrings("8", false, "\n")
 	if err != nil {
 		panic(err)
@@ -68,5 +72,5 @@ func main() {
 		}
 	}
 
-	fmt.Println(len(pos))
+	return len(pos)
 }

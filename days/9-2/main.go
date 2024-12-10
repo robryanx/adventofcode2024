@@ -15,6 +15,10 @@ type space struct {
 }
 
 func main() {
+	fmt.Println(solution())
+}
+
+func solution() int {
 	values, err := util.ReadBytes("9", false)
 	if err != nil {
 		panic(err)
@@ -65,7 +69,7 @@ func main() {
 		}
 	}
 
-	fmt.Println(totalSpaces(spaces))
+	return totalSpaces(spaces)
 }
 
 func totalSpaces(spaces []*space) int {
