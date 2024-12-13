@@ -48,23 +48,20 @@ func solution() int {
 			steps[i] = [2]int{x, y}
 		}
 
-		best := -1
+		score := -1
+	loop:
 		for i := 0; i <= 100; i++ {
 			for j := 0; j <= 100; j++ {
 				if steps[0][0]*i+steps[1][0]*j == steps[2][0] &&
 					steps[0][1]*i+steps[1][1]*j == steps[2][1] {
-					score := i*3 + j
-					if best == -1 || score < best {
-						best = score
-					}
+					score = i*3 + j
+					break loop
 				}
 			}
 		}
 
-		if best != -1 {
-			total += best
-		} else {
-
+		if score != -1 {
+			total += score
 		}
 	}
 
