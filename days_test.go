@@ -42,14 +42,26 @@ func TestDays(t *testing.T) {
 	for day, expect := range expectations {
 		t.Run(day, func(t *testing.T) {
 			t.Parallel()
-			runCmd := exec.Command("go", "run", fmt.Sprintf("days/%s/main.go", day))
-			output, err := runCmd.CombinedOutput()
+			buildCmd := exec.Command("go", "build", "-o", fmt.Sprintf("day-%s", day), fmt.Sprintf("days/%s/main.go", day))
+			output, err := buildCmd.CombinedOutput()
+			if err != nil {
+				fmt.Println(output)
+			}
+
+			runCmd := exec.Command(fmt.Sprintf("./day-%s", day))
+			output, err = runCmd.CombinedOutput()
 			if err != nil {
 				fmt.Println(output)
 			}
 
 			assert.NoError(t, err)
 			assert.Equal(t, expect, strings.TrimRight(string(output), "\n"), fmt.Sprintf("Day %s", day))
+
+			rmCmd := exec.Command("rm", fmt.Sprintf("day-%s", day))
+			output, err = rmCmd.CombinedOutput()
+			if err != nil {
+				fmt.Println(output)
+			}
 		})
 	}
 }
