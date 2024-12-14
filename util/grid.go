@@ -1,11 +1,37 @@
 package util
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"os/exec"
+)
 
 func PrintGrid(grid [][]byte) {
 	for y := 0; y < len(grid); y++ {
 		fmt.Printf("%s\n", string(grid[y]))
 	}
+}
+
+var Reset = "\033[0m"
+var Red = "\033[31m"
+
+func PrintUint8Grid(grid [][]uint8) {
+	for y := 0; y < len(grid); y++ {
+		for x := 0; x < len(grid[0]); x++ {
+			if grid[y][x] > 0 {
+				fmt.Printf("%s%d%s", Red, grid[y][x], Reset)
+			} else {
+				fmt.Printf("%d", grid[y][x])
+			}
+		}
+		fmt.Println()
+	}
+}
+
+func ClearScreen() {
+	cmd := exec.Command("clear")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
 }
 
 func CopyGrid(grid [][]byte, populate bool) [][]byte {
