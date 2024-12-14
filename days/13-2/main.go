@@ -2,12 +2,9 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"regexp"
 	"strconv"
 	"strings"
-
-	"gonum.org/v1/gonum/mat"
 
 	"github.com/robryanx/adventofcode2024/util"
 )
@@ -54,22 +51,32 @@ func solution() int {
 		steps[2][0] += 10000000000000
 		steps[2][1] += 10000000000000
 
-		A := mat.NewDense(2, 2, []float64{float64(steps[0][0]), float64(steps[1][0]), float64(steps[0][1]), float64(steps[1][1])})
-		b := mat.NewVecDense(2, []float64{float64(steps[2][0]), float64(steps[2][1])})
-
-		var x mat.VecDense
-		if err := x.SolveVec(A, b); err != nil {
-			panic(err)
-		}
-
-		roundedI := math.Round(x.RawVector().Data[0]*10) / 10
-		roundedJ := math.Round(x.RawVector().Data[1]*10) / 10
-
-		if roundedI == float64(int64(roundedI)) &&
-			roundedJ == float64(int64(roundedJ)) {
-			total += int(math.Round(x.RawVector().Data[0]))*3 + int(math.Round(x.RawVector().Data[1]))
+		solved, i, j := solveEquations([3]int{steps[0][0], steps[1][0], steps[2][0]}, [3]int{steps[0][1], steps[1][1], steps[2][1]})
+		if solved {
+			total += i*3 + j
 		}
 	}
 
 	return total
+}
+
+// solve for x and y given 2 equations of the form
+// 1x + 2y = 9
+func solveEquations(equationA, equationB [3]int) (bool, int, int) {
+	detCoef := equationA[0]*equationB[1] - equationA[1]*equationB[0]
+	detX := equationA[2]*equationB[1] - equationB[2]*equationA[1]
+	detY := equationB[2]*equationA[0] - equationA[2]*equationB[0]
+
+	if detCoef == 0 {
+		return false, 0, 0
+	}
+
+	x := float64(detX) / float64(detCoef)
+	y := float64(detY) / float64(detCoef)
+
+	if x != float64(int64(x)) || y != float64(int64(y)) {
+		return false, 0, 0
+	}
+
+	return true, detX / detCoef, detY / detCoef
 }
