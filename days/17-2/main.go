@@ -71,36 +71,52 @@ func solution() int {
 	// 		fmt.Println(count)
 	// 	}
 
-	// 11010043
-	// 2097147
-	// 1572859
-	// 524283
-	// 16252923
-	// 16777211
-	// 1048571
+	currentVal := 36880208374314
+	fmt.Println(currentVal)
+	endVal := 109037984852522 + (1073741824 * 100000)
 
-	startVal := 69037984852522 - (1073741824 * 30000)
-	endVal := 69037984852522 + (1073741824 * 100000)
+	// cycles := []int{524283, 1572859, 2097147, 1048571, 16777211, 16252923, 11010043}
+	cycles := []int{68719476731, 1030792151035}
+	offsets := []int{0, 3, 5}
+
+	// 2,4,1,1,7,5,0,3,1,4,4,0,5,5,3,0
 
 	prev := 0
-	for i := startVal; i < endVal; i++ {
-		registers[0] = i
-		output := runProgram(registers, instructions, instructionPointer, false)
-		if output[0] == "2" && output[1] == "4" && output[2] == "1" && output[3] == "1" && output[4] == "7" && output[5] == "5" && output[6] == "0" {
-			//fmt.Println(i)
-			fmt.Println(i - prev)
-			prev = i
+
+	for {
+		found := false
+		for i := 0; i < len(cycles); i++ {
+			for j := 0; j < len(offsets); j++ {
+				testVal := currentVal + cycles[i] + 5 + offsets[j]
+				registers[0] = testVal
+				output := runProgram(registers, instructions, instructionPointer, false)
+				if output[0] == 2 && output[1] == 4 && output[2] == 1 && output[3] == 1 && output[4] == 7 &&
+					output[5] == 5 && output[6] == 0 && output[7] == 3 && output[8] == 1 && output[9] == 4 && output[10] == 4 {
+					found = true
+					if output[11] == 0 && output[12] == 5 && output[13] == 5 && output[14] == 3 && output[15] == 0 {
+						// found = true
+						fmt.Println(output)
+						// fmt.Println(testVal)
+						fmt.Println(testVal - prev)
+						prev = testVal
+					}
+
+				}
+			}
+			if found {
+				currentVal += cycles[i] + 5
+				break
+			}
 		}
 
-		if len(output) != 16 {
-			fmt.Println(len(output))
+		if currentVal > endVal || !found {
 			break
 		}
 	}
 
 	// 2097152
 
-	//fmt.Println(output)
+	// fmt.Println(output)
 	// if strings.Join(output, ",") == rawInstructions {
 	// 	return count
 	// }
@@ -111,8 +127,8 @@ func solution() int {
 	return 0
 }
 
-func runProgram(registers []int, instructions [][2]int, instructionPointer int, debug bool) []string {
-	var output []string
+func runProgram(registers []int, instructions [][2]int, instructionPointer int, debug bool) []int {
+	var output []int
 	for {
 		if instructionPointer > len(instructions)-1 {
 			break
@@ -153,7 +169,7 @@ func runProgram(registers []int, instructions [][2]int, instructionPointer int, 
 			}
 		case 5:
 			outVal := comboVar(registers, instructon[1]) % 8
-			output = append(output, strconv.Itoa(outVal))
+			output = append(output, outVal)
 			if debug {
 				fmt.Printf("out operand: %d, combo: %d\n", instructon[1], outVal)
 			}
