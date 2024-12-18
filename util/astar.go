@@ -90,7 +90,7 @@ func rotation(currentDir, newDirection Direction) int {
 	return abs(int(currentDir)-int(newDirection)) % 2
 }
 
-func (p node) neighbors(grid [][]byte, initialDirection Direction) []NodePos {
+func (p node) neighbors(grid [][]byte, initialDirection Direction, rotationCost int) []NodePos {
 	list := make([]NodePos, 0, 4)
 
 	parentDirection := p.parentDirection()
@@ -103,7 +103,7 @@ func (p node) neighbors(grid [][]byte, initialDirection Direction) []NodePos {
 			Y:    p.pos.Y - 1,
 			X:    p.pos.X,
 			Dir:  North,
-			Cost: 1 + rotation(parentDirection, North)*1000,
+			Cost: 1 + rotation(parentDirection, North)*rotationCost,
 		})
 	}
 
@@ -112,7 +112,7 @@ func (p node) neighbors(grid [][]byte, initialDirection Direction) []NodePos {
 			Y:    p.pos.Y + 1,
 			X:    p.pos.X,
 			Dir:  South,
-			Cost: 1 + rotation(parentDirection, South)*1000,
+			Cost: 1 + rotation(parentDirection, South)*rotationCost,
 		})
 	}
 
@@ -121,7 +121,7 @@ func (p node) neighbors(grid [][]byte, initialDirection Direction) []NodePos {
 			Y:    p.pos.Y,
 			X:    p.pos.X - 1,
 			Dir:  West,
-			Cost: 1 + rotation(parentDirection, West)*1000,
+			Cost: 1 + rotation(parentDirection, West)*rotationCost,
 		})
 	}
 
@@ -130,14 +130,14 @@ func (p node) neighbors(grid [][]byte, initialDirection Direction) []NodePos {
 			Y:    p.pos.Y,
 			X:    p.pos.X + 1,
 			Dir:  East,
-			Cost: 1 + rotation(parentDirection, East)*1000,
+			Cost: 1 + rotation(parentDirection, East)*rotationCost,
 		})
 	}
 
 	return list
 }
 
-func Pathfind(grid [][]byte, initalDirection Direction, from NodePos, to NodePos) ([]NodePos, int, bool, map[int]int) {
+func Pathfind(grid [][]byte, initalDirection Direction, rotationCost int, from NodePos, to NodePos) ([]NodePos, int, bool, map[int]int) {
 	nm := nodeMap{}
 	nq := &priorityQueue{}
 	heap.Init(nq)
@@ -171,7 +171,7 @@ func Pathfind(grid [][]byte, initalDirection Direction, from NodePos, to NodePos
 			return p, current.pos.Cost, true, costs
 		}
 
-		for _, neighbor := range current.neighbors(grid, initalDirection) {
+		for _, neighbor := range current.neighbors(grid, initalDirection, rotationCost) {
 			cost := current.pos.Cost + neighbor.Cost
 			neighborNode := nm.get(neighbor)
 

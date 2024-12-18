@@ -42,7 +42,7 @@ func solution() int {
 		}
 	}
 
-	_, distance, _, _ := util.Pathfind(grid, util.East, start, end)
+	_, distance, _, _ := util.Pathfind(grid, util.East, 1000, start, end)
 
 	return distance
 }

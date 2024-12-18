@@ -72,7 +72,6 @@ func solution() int {
 	// 	}
 
 	currentVal := 36880208374314
-	fmt.Println(currentVal)
 	endVal := 109037984852522 + (1073741824 * 100000)
 
 	// cycles := []int{524283, 1572859, 2097147, 1048571, 16777211, 16252923, 11010043}
@@ -80,8 +79,6 @@ func solution() int {
 	offsets := []int{0, 3, 5}
 
 	// 2,4,1,1,7,5,0,3,1,4,4,0,5,5,3,0
-
-	prev := 0
 
 	for {
 		found := false
@@ -94,11 +91,7 @@ func solution() int {
 					output[5] == 5 && output[6] == 0 && output[7] == 3 && output[8] == 1 && output[9] == 4 && output[10] == 4 {
 					found = true
 					if output[11] == 0 && output[12] == 5 && output[13] == 5 && output[14] == 3 && output[15] == 0 {
-						// found = true
-						fmt.Println(output)
-						// fmt.Println(testVal)
-						fmt.Println(testVal - prev)
-						prev = testVal
+						return testVal
 					}
 
 				}
@@ -113,16 +106,6 @@ func solution() int {
 			break
 		}
 	}
-
-	// 2097152
-
-	// fmt.Println(output)
-	// if strings.Join(output, ",") == rawInstructions {
-	// 	return count
-	// }
-
-	// 	count++
-	// }
 
 	return 0
 }

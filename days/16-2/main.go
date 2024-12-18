@@ -55,7 +55,7 @@ func solution() int {
 		}
 	}
 
-	basePath, distance, _, _ := util.Pathfind(grid, util.East, start, end)
+	basePath, distance, _, _ := util.Pathfind(grid, util.East, 1000, start, end)
 	for _, pos := range basePath {
 		grid[pos.Y][pos.X] = 'O'
 	}
@@ -81,7 +81,7 @@ func solution() int {
 				extraCost += 1000
 			}
 
-			checkPath, checkDistance, found, _ := util.Pathfind(grid, testDir, start, end)
+			checkPath, checkDistance, found, _ := util.Pathfind(grid, testDir, 1000, start, end)
 			if found && checkDistance+basePath[i].Cost+extraCost == distance {
 				for _, pos := range checkPath {
 					grid[pos.Y][pos.X] = 'O'
