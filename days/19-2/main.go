@@ -1,9 +1,7 @@
 package main
 
 import (
-	"cmp"
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/robryanx/adventofcode2024/util"
@@ -25,9 +23,6 @@ func solution() int {
 	for row := range rows {
 		if len(patterns) == 0 {
 			patterns = strings.Split(row, ", ")
-			slices.SortFunc(patterns, func(a, b string) int {
-				return cmp.Compare(len(b), len(a))
-			})
 		} else {
 			for _, design := range strings.Split(row, "\n") {
 				foundCache := map[string]int{}

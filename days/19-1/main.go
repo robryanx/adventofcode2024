@@ -26,7 +26,7 @@ func solution() int {
 		if len(patterns) == 0 {
 			patterns = strings.Split(row, ", ")
 			slices.SortFunc(patterns, func(a, b string) int {
-				return cmp.Compare(len(b), len(a))
+				return cmp.Compare(len(a), len(b))
 			})
 		} else {
 			for _, design := range strings.Split(row, "\n") {
