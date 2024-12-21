@@ -1,10 +1,13 @@
 package util
 
-import hp "container/heap"
+import (
+	hp "container/heap"
+	"slices"
+)
 
 type path struct {
 	value int
-	nodes []string
+	nodes [][2]int
 }
 
 type minPath []path
@@ -42,32 +45,29 @@ func (h *dheap) pop() path {
 	return i.(path)
 }
 
-type edge struct {
-	node   string
-	weight int
+func getEdges(graph [][]byte, node [2]int) [][3]int {
+	edges := [][3]int{}
+
+	if node[0]-1 >= 0 && graph[node[0]-1][node[1]] != ' ' {
+		edges = append(edges, [3]int{node[0] - 1, node[1], 1})
+	}
+	if node[0]+1 < len(graph) && graph[node[0]+1][node[1]] != ' ' {
+		edges = append(edges, [3]int{node[0] + 1, node[1], 1})
+	}
+	if node[1]-1 >= 0 && graph[node[0]][node[1]-1] != ' ' {
+		edges = append(edges, [3]int{node[0], node[1] - 1, 1})
+	}
+	if node[1]+1 < len(graph[0]) && graph[node[0]][node[1]+1] != ' ' {
+		edges = append(edges, [3]int{node[0], node[1] + 1, 1})
+	}
+
+	return edges
 }
 
-type Graph struct {
-	nodes map[string][]edge
-}
-
-func NewGraph() *Graph {
-	return &Graph{nodes: make(map[string][]edge)}
-}
-
-func (g *Graph) AddEdge(origin, destation string, weight int) {
-	g.nodes[origin] = append(g.nodes[origin], edge{node: destation, weight: weight})
-	g.nodes[destation] = append(g.nodes[destation], edge{node: origin, weight: weight})
-}
-
-func (g *Graph) getEdges(node string) []edge {
-	return g.nodes[node]
-}
-
-func (g *Graph) GetPath(origin, destation string) (int, []string) {
+func GetPath(grid [][]byte, origin, destination [2]int) (int, [][2]int) {
 	h := newHeap()
-	h.push(path{value: 0, nodes: []string{origin}})
-	visited := make(map[string]bool)
+	h.push(path{value: 0, nodes: [][2]int{origin}})
+	visited := make(map[[2]int]bool)
 
 	for len(*h.values) > 0 {
 		// Find the nearest yet to visit node
@@ -78,14 +78,20 @@ func (g *Graph) GetPath(origin, destation string) (int, []string) {
 			continue
 		}
 
-		if node == destation {
+		if node == destination {
 			return p.value, p.nodes
 		}
 
-		for _, e := range g.getEdges(node) {
-			if !visited[e.node] {
-				// We calculate the total spent so far plus the cost and the path of getting here
-				h.push(path{value: p.value + e.weight, nodes: append([]string{}, append(p.nodes, e.node)...)})
+		for _, e := range getEdges(grid, node) {
+			eNode := [2]int{e[0], e[1]}
+			if !visited[eNode] {
+				newNodes := slices.Clone(p.nodes)
+				newNodes = append(newNodes, eNode)
+
+				h.push(path{
+					value: p.value + e[2],
+					nodes: newNodes,
+				})
 			}
 		}
 
