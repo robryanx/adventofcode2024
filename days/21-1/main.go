@@ -49,7 +49,7 @@ var dirKeypadLookup = map[byte][2]int{
 }
 
 func solution() int {
-	rows, err := util.ReadStrings("21", true, "\n")
+	rows, err := util.ReadStrings("21", false, "\n")
 	if err != nil {
 		panic(err)
 	}
@@ -88,8 +88,6 @@ func solution() int {
 				moves := dirKeypadMovesTotal(nextList)
 				if moves <= minMoves {
 					minMoves = moves
-
-					fmt.Printf("%s - %d - %d\n", nextList, len(nextList), minMoves)
 				}
 			}
 		}
@@ -99,8 +97,6 @@ func solution() int {
 		if err != nil {
 			panic(err)
 		}
-
-		break
 
 		total += minMoves * num
 	}

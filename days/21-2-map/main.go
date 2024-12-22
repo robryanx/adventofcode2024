@@ -29,6 +29,131 @@ var dirKeypad = [][]byte{
 var keypadButtons = []byte{'A', '>', '^', 'v', '<'}
 var expansions = map[byte]map[byte][]string{}
 
+func pathMoves(path [][2]int) string {
+	moves := []byte{}
+	for i := 0; i < len(path)-1; i++ {
+		if path[i][0] > path[i+1][0] {
+			moves = append(moves, '^')
+		} else if path[i][0] < path[i+1][0] {
+			moves = append(moves, 'v')
+		} else if path[i][1] > path[i+1][1] {
+			moves = append(moves, '<')
+		} else {
+			moves = append(moves, '>')
+		}
+	}
+	moves = append(moves, 'A')
+	return string(moves)
+}
+
+func keypadExpansions() []map[byte]map[byte]string {
+	for _, currentCh := range keypadButtons {
+		expansions[currentCh] = map[byte][]string{}
+
+		for _, nextCh := range keypadButtons {
+			paths := []pathStore{}
+			dfs(dirKeypad, [][2]int{dirKeypadLookup[currentCh]}, dirKeypadLookup[nextCh], 0, &paths)
+
+			slices.SortFunc(paths, func(a, b pathStore) int {
+				return cmp.Compare(a.cost, b.cost)
+			})
+
+			minCost := paths[0].cost
+			for _, path := range paths {
+				if path.cost < minCost+5 {
+					expansions[currentCh][nextCh] = append(expansions[currentCh][nextCh], pathMoves(path.p))
+				}
+			}
+		}
+	}
+
+	buildExpansions := []map[byte]map[byte]string{{}}
+	for currentCh := range expansions {
+		for nextCh, paths := range expansions[currentCh] {
+			if _, ok := buildExpansions[0][currentCh]; !ok {
+				buildExpansions[0][currentCh] = map[byte]string{}
+			}
+
+			buildExpansions[0][currentCh][nextCh] = paths[0]
+		}
+	}
+
+	for currentCh := range expansions {
+		for nextCh, paths := range expansions[currentCh] {
+			newExpansions := []map[byte]map[byte]string{}
+			for _, path := range paths {
+				for _, ex := range buildExpansions {
+					exNew := cloneExpansion(ex)
+					exNew[currentCh][nextCh] = path
+					newExpansions = append(newExpansions, exNew)
+				}
+			}
+
+			buildExpansions = newExpansions
+		}
+	}
+
+	printExpansions(expansions)
+
+	return buildExpansions
+}
+
+func printExpansions(expansions map[byte]map[byte][]string) {
+	for currentCh := range expansions {
+		for nextCh, paths := range expansions[currentCh] {
+			fmt.Printf("%s -> %s: %s\n", string(currentCh), string(nextCh), paths)
+		}
+	}
+	fmt.Println()
+}
+
+func cloneExpansion(current map[byte]map[byte]string) map[byte]map[byte]string {
+	next := map[byte]map[byte]string{}
+	for currentCh := range current {
+		if _, ok := next[currentCh]; !ok {
+			next[currentCh] = map[byte]string{}
+		}
+
+		for nextCh, path := range current[currentCh] {
+			next[currentCh][nextCh] = path
+		}
+	}
+	return next
+}
+
+func expandMap(current map[string]int, currentExpansion map[byte]map[byte]string) map[string]int {
+	next := map[string]int{}
+	for expansion, count := range current {
+		loc := byte('A')
+		for _, ch := range []byte(expansion) {
+			next[currentExpansion[loc][ch]] += count
+			loc = ch
+		}
+
+	}
+	return next
+}
+
+func expandIntoMap(current []byte, start byte) map[string]int {
+	next := map[string]int{}
+	loc := start
+	for _, ch := range current {
+		next[expansions[loc][ch][0]]++
+		loc = ch
+	}
+	return next
+}
+
+func expand(current []byte, start byte) []byte {
+	next := make([]byte, 0, len(current)*3)
+	loc := start
+	for _, ch := range current {
+		next = append(next, expansions[loc][ch][0]...)
+		loc = ch
+	}
+	return next
+}
+
 var keypadLookup = map[byte][2]int{
 	'7': {0, 0},
 	'8': {0, 1},
@@ -86,52 +211,18 @@ func solution() int {
 			panic(err)
 		}
 
+		fmt.Printf("min moves: %d - num: %d - total: %d\n", minMoves, num, (minMoves * num))
+
 		total += minMoves * num
 	}
 
 	return total
 }
 
-func pathMoves(path [][2]int) string {
-	moves := []byte{}
-	for i := 0; i < len(path)-1; i++ {
-		if path[i][0] > path[i+1][0] {
-			moves = append(moves, '^')
-		} else if path[i][0] < path[i+1][0] {
-			moves = append(moves, 'v')
-		} else if path[i][1] > path[i+1][1] {
-			moves = append(moves, '<')
-		} else {
-			moves = append(moves, '>')
-		}
-	}
-	moves = append(moves, 'A')
-	return string(moves)
-}
-
-func keypadExpansions() {
-	for _, currentCh := range keypadButtons {
-		expansions[currentCh] = map[byte][]string{}
-
-		for _, nextCh := range keypadButtons {
-			paths := []pathStore{}
-			dfs(dirKeypad, [][2]int{dirKeypadLookup[currentCh]}, dirKeypadLookup[nextCh], 0, &paths)
-
-			slices.SortFunc(paths, func(a, b pathStore) int {
-				return cmp.Compare(a.cost, b.cost)
-			})
-
-			minCost := paths[0].cost
-			for _, path := range paths {
-				if path.cost < minCost+5 {
-					expansions[currentCh][nextCh] = append(expansions[currentCh][nextCh], pathMoves(path.p))
-				}
-			}
-		}
-	}
-}
-
 var cache = map[string]int{}
+
+// A -> v: [v<A <vA]
+// > -> ^: [^<A <^A]
 
 func expandMem(row string, depth int) int {
 	if count, ok := cache[fmt.Sprintf("%s%d", row, depth)]; ok {
@@ -151,6 +242,11 @@ func expandMem(row string, depth int) int {
 			} else {
 				moves := expandMem(path, depth-1)
 				if minMoves == -1 || moves < minMoves {
+					if path == "^<A" {
+						fmt.Println("1 ^<A", depth, moves)
+					} else if path == "<^A" {
+						fmt.Println("2 <^A", depth, moves)
+					}
 					minMoves = moves
 				}
 			}
