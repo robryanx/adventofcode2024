@@ -47,10 +47,6 @@ func commonSet(connections map[string][]string, currentSet []string, pos int) []
 	}
 
 	nextSet := slices.Clone(currentSet)
-	nextSet = slices.Delete(nextSet, pos, pos+1)
-	retSet := commonSet(connections, nextSet, pos)
-
-	nextSet = slices.Clone(currentSet)
 	checkConnections := connections[nextSet[pos]]
 	for i := len(nextSet) - 1; i >= 0; i-- {
 		if nextSet[pos] != nextSet[i] && !slices.Contains(checkConnections, nextSet[i]) {
@@ -58,10 +54,5 @@ func commonSet(connections map[string][]string, currentSet []string, pos int) []
 		}
 	}
 
-	altRetSet := commonSet(connections, nextSet, pos+1)
-	if len(altRetSet) > len(retSet) {
-		return altRetSet
-	}
-
-	return retSet
+	return commonSet(connections, nextSet, pos+1)
 }
