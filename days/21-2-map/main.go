@@ -29,6 +29,82 @@ var dirKeypad = [][]byte{
 var keypadButtons = []byte{'A', '>', '^', 'v', '<'}
 var expansions = map[byte]map[byte][]string{}
 
+var keypadLookup = map[byte][2]int{
+	'7': {0, 0},
+	'8': {0, 1},
+	'9': {0, 2},
+	'4': {1, 0},
+	'5': {1, 1},
+	'6': {1, 2},
+	'1': {2, 0},
+	'2': {2, 1},
+	'3': {2, 2},
+	'0': {3, 1},
+	'A': {3, 2},
+}
+
+var dirKeypadLookup = map[byte][2]int{
+	'^': {0, 1},
+	'A': {0, 2},
+	'<': {1, 0},
+	'v': {1, 1},
+	'>': {1, 2},
+}
+
+func solution() int {
+	rows, err := util.ReadStrings("21", false, "\n")
+	if err != nil {
+		panic(err)
+	}
+	expansions := keypadExpansions()
+
+	total := 0
+	for row := range rows {
+		segmentMoves := keypadMoves([]byte(row))
+		lists := segmentMoves[0]
+		for i := 1; i < len(segmentMoves); i++ {
+			newLists := [][]byte{}
+			for j := 0; j < len(segmentMoves[i]); j++ {
+				for _, list := range lists {
+					newLists = append(newLists, slices.Concat(list, segmentMoves[i][j]))
+				}
+			}
+			lists = newLists
+		}
+
+		minMoves := -1
+		for _, list := range lists {
+			for _, expansion := range expansions {
+				movesMap := expandIntoMap(list, expansion, 'A')
+				for i := 0; i < 25; i++ {
+					movesMap = expandMap(movesMap, expansion)
+				}
+
+				count := 0
+				for _, c := range movesMap {
+					count += c
+				}
+
+				if minMoves == -1 || count < minMoves {
+					minMoves = count
+				}
+			}
+		}
+
+		numRaw := strings.Replace(row, "A", "", -1)
+		num, err := strconv.Atoi(numRaw)
+		if err != nil {
+			panic(err)
+		}
+
+		//fmt.Printf("min moves: %d - num: %d - total: %d\n", minMoves, num, (minMoves * num))
+
+		total += minMoves * num
+	}
+
+	return total
+}
+
 func pathMoves(path [][2]int) string {
 	moves := []byte{}
 	for i := 0; i < len(path)-1; i++ {
@@ -60,7 +136,7 @@ func keypadExpansions() []map[byte]map[byte]string {
 
 			minCost := paths[0].cost
 			for _, path := range paths {
-				if path.cost < minCost+5 {
+				if path.cost <= minCost {
 					expansions[currentCh][nextCh] = append(expansions[currentCh][nextCh], pathMoves(path.p))
 				}
 			}
@@ -92,8 +168,6 @@ func keypadExpansions() []map[byte]map[byte]string {
 			buildExpansions = newExpansions
 		}
 	}
-
-	printExpansions(expansions)
 
 	return buildExpansions
 }
@@ -134,89 +208,14 @@ func expandMap(current map[string]int, currentExpansion map[byte]map[byte]string
 	return next
 }
 
-func expandIntoMap(current []byte, start byte) map[string]int {
+func expandIntoMap(current []byte, currentExpansion map[byte]map[byte]string, start byte) map[string]int {
 	next := map[string]int{}
 	loc := start
 	for _, ch := range current {
-		next[expansions[loc][ch][0]]++
+		next[currentExpansion[loc][ch]]++
 		loc = ch
 	}
 	return next
-}
-
-func expand(current []byte, start byte) []byte {
-	next := make([]byte, 0, len(current)*3)
-	loc := start
-	for _, ch := range current {
-		next = append(next, expansions[loc][ch][0]...)
-		loc = ch
-	}
-	return next
-}
-
-var keypadLookup = map[byte][2]int{
-	'7': {0, 0},
-	'8': {0, 1},
-	'9': {0, 2},
-	'4': {1, 0},
-	'5': {1, 1},
-	'6': {1, 2},
-	'1': {2, 0},
-	'2': {2, 1},
-	'3': {2, 2},
-	'0': {3, 1},
-	'A': {3, 2},
-}
-
-var dirKeypadLookup = map[byte][2]int{
-	'^': {0, 1},
-	'A': {0, 2},
-	'<': {1, 0},
-	'v': {1, 1},
-	'>': {1, 2},
-}
-
-func solution() int {
-	rows, err := util.ReadStrings("21", false, "\n")
-	if err != nil {
-		panic(err)
-	}
-	keypadExpansions()
-
-	total := 0
-	for row := range rows {
-		segmentMoves := keypadMoves([]byte(row))
-		lists := segmentMoves[0]
-		for i := 1; i < len(segmentMoves); i++ {
-			newLists := [][]byte{}
-			for j := 0; j < len(segmentMoves[i]); j++ {
-				for _, list := range lists {
-					newLists = append(newLists, slices.Concat(list, segmentMoves[i][j]))
-				}
-			}
-			lists = newLists
-		}
-
-		minMoves := -1
-		for _, list := range lists {
-			count := expandMem(string(list), 25)
-			if minMoves == -1 || count < minMoves {
-				minMoves = count
-			}
-		}
-
-		numRaw := strings.Replace(row, "A", "", -1)
-		num, err := strconv.Atoi(numRaw)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("min moves: %d - num: %d - total: %d\n", minMoves, num, (minMoves * num))
-
-		total += minMoves * num
-	}
-
-	return total
 }
 
 var cache = map[string]int{}
@@ -242,11 +241,6 @@ func expandMem(row string, depth int) int {
 			} else {
 				moves := expandMem(path, depth-1)
 				if minMoves == -1 || moves < minMoves {
-					if path == "^<A" {
-						fmt.Println("1 ^<A", depth, moves)
-					} else if path == "<^A" {
-						fmt.Println("2 <^A", depth, moves)
-					}
 					minMoves = moves
 				}
 			}
